@@ -89,13 +89,14 @@
 
 
 // Let's look at a practical example where we only want to iterate through the employees in this object, and not the size or department:
-const engineeringTeam = {
-	size: 3,
-	department: 'Engineering',
-	lead: 'Jill',
-	manager: 'Alex',
-	engineer: 'Dave'
-};
+// const engineeringTeam = {
+// 	size: 3,
+// 	department: 'Engineering',
+// 	lead: 'Jill',
+// 	manager: 'Alex',
+// 	engineer: 'Dave',
+// 	testingTeam: testingTeam
+// };
 
 // Regular function:
 // function employees() {
@@ -106,32 +107,114 @@ const engineeringTeam = {
 
 // Generator function:
 
-const names = [];
+// const names = [];
 
-function* TeamIterator(team) {
-	yield team.lead;
-	yield team.manager;
-	yield team.engineer;
-}
-
-// Generators are great because we can use it on multiple teams, and just pass each team into TeamIterator as an argument
-for (let name of TeamIterator(engineeringTeam)) {
-	names.push(name);
-}
+// function* TeamIterator(team) {
+// 	yield team.lead;
+// 	yield team.manager;
+// 	yield team.engineer;
+// }
 
 
+// How to combine generators together
+
+// const testingTeam = {
+// 	lead: 'Amanda',
+// 	tester: 'Bill'
+// }
+
+// const engineeringTeam = {
+// 	// testingTeam: testingTeam can be condensed down, and following convention, condensed key value pairs go at the top of the list.
+// 	testingTeam,
+// 	size: 3,
+// 	department: 'Engineering',
+// 	lead: 'Jill',
+// 	manager: 'Alex',
+// 	engineer: 'Dave'
+// };
+
+// function* TeamIterator(team) {
+// 	yield team.lead;
+// 	yield team.manager;
+// 	yield team.engineer;
+// 	// We could put this: yield team.testingTeam.lead, but it's better to make a separate generator for it instead so that it's more reusable in the future
+// 	const testingTeamGenerator = TestingTeamIterator(team.testingTeam);
+// 	// yield* is like a trap door which drops the iterator down into the other generator function to run as many times there as there are yield statements in the trap door generator, and is known as generator delegation.
+// 	yield* testingTeamGenerator;
+// }
+
+// function* TestingTeamIterator(team) {
+// 	yield team.lead;
+// 	yield team.tester;
+// }
+
+// const names = [];
+// // Generators are great because we can use it on multiple teams, and just pass each team into TeamIterator as an argument
+// for (let name of TeamIterator(engineeringTeam)) {
+// 	names.push(name);
+// }
 
 
+// Now let's clean up that code with a [Symbol.iterator] which is a tool that teaches objects how to respond to the for of loop:
+
+// const testingTeam = {
+// 	lead: 'Amanda',
+// 	tester: 'Bill',
+// 	[Symbol.iterator]: function* () {
+// 		// using this within the generator function points to testingTeam, so is the same thing as testingTeam.lead and testingTeam.tester
+// 		yield this.lead;
+// 		yield this.tester;
+// 	}
+// };
+
+// const engineeringTeam = {
+// 	testingTeam,
+// 	size: 3,
+// 	department: 'Engineering',
+// 	lead: 'Jill',
+// 	manager: 'Alex',
+// 	engineer: 'Dave',
+// 	[Symbol.iterator]: function* () {
+// 		yield this.lead;
+// 		yield this.manager;
+// 		yield this.engineer;
+// 		yield* this.testingTeam;
+// 	}
+// };
+
+// const names = [];
+
+// for (let name of engineeringTeam) {
+// 	names.push(name);
+// }
 
 
+// Let's look at a practical use for this, iterating through a tree structure:
 
+// class Comment {
+// 	constructor(content, children) {
+// 		this.content = content;
+// 		this.children = children;
+// 	}
 
+// 	// This is how we write methods in a class
+// 	*[Symbol.iterator]() {
+// 		yield this.content;
+// 		for (let child of this.children) {
+// 			yield* child;
+// 		}
+// 	}
+// }
 
+// const children = [
+// 	new Comment('good comment', []),
+// 	new Comment('bad comment', []),
+// 	new Comment('meh', [])
+// ];
 
+// const tree = new Comment('Great post!', children);
 
-
-
-
-
-
-
+// const values = [];
+// for (let value of tree) {
+// 	values.push(value);
+// }
